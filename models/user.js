@@ -13,7 +13,7 @@ const userSchema = new Schema({
     height: { type: Number, required: true, min: 0 },
     weight: { type: Number, required: true, min: 0 },
     maxCalories: { type: Number, required: true, min: 0 },
-    shoppingList: { type: mongoose.Types.ObjectId, required: true, ref: 'ShoppingList' },
+    shoppingList: { type: mongoose.Types.ObjectId, required: false, ref: 'ShoppingList' },
     dailyNutrition: [{ type: mongoose.Types.ObjectId, required: true, ref: 'DailyNutrition' }]
 });
 
