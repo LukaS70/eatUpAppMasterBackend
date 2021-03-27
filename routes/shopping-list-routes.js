@@ -14,7 +14,7 @@ router.post(
     '/',
     [
         check('ingredients').isArray({ min: 1 }),
-        check('ingredients.*.amount').isNumeric(),
+        check('ingredients.*.amount').isFloat({ min: 0 }),
         check('ingredients.*.checked').isBoolean(),
         check('ingredients.*.ingredient').not().isEmpty(),
     ],
@@ -25,7 +25,7 @@ router.patch(
     '/:slid',
     [
         check('ingredients').isArray({ min: 1 }),
-        check('ingredients.*.amount').isNumeric(),
+        check('ingredients.*.amount').isFloat({ min: 0 }),
         check('ingredients.*.checked').isBoolean(),
         check('ingredients.*.ingredient').not().isEmpty(),
     ],

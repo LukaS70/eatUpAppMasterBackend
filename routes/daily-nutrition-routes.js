@@ -15,12 +15,12 @@ router.post(
     [
         check('day').not().isEmpty(),
         check('nutrition').isObject(),
-        check('nutrition.calories').isNumeric(),
-        check('nutrition.totalFats').isNumeric(),
-        check('nutrition.saturatedFats').isNumeric(),
-        check('nutrition.totalCarbohydrates').isNumeric(),
-        check('nutrition.sugar').isNumeric(),
-        check('nutrition.proteine').isNumeric()
+        check('nutrition.calories').isFloat({ min: 0 }),
+        check('nutrition.totalFats').isFloat({ min: 0 }),
+        check('nutrition.saturatedFats').isFloat({ min: 0 }),
+        check('nutrition.totalCarbohydrates').isFloat({ min: 0 }),
+        check('nutrition.sugar').isFloat({ min: 0 }),
+        check('nutrition.proteine').isFloat({ min: 0 })
     ],
     dailyNutritionController.createDailyNutrition
 );
@@ -30,12 +30,12 @@ router.patch(
     [
         check('day').not().isEmpty(),
         check('nutrition').isObject(),
-        check('nutrition.calories').isNumeric(),
-        check('nutrition.totalFats').isNumeric(),
-        check('nutrition.saturatedFats').isNumeric(),
-        check('nutrition.totalCarbohydrates').isNumeric(),
-        check('nutrition.sugar').isNumeric(),
-        check('nutrition.proteine').isNumeric()
+        check('nutrition.calories').isFloat({ min: 0 }),
+        check('nutrition.totalFats').isFloat({ min: 0 }),
+        check('nutrition.saturatedFats').isFloat({ min: 0 }),
+        check('nutrition.totalCarbohydrates').isFloat({ min: 0 }),
+        check('nutrition.sugar').isFloat({ min: 0 }),
+        check('nutrition.proteine').isFloat({ min: 0 })
     ],
     dailyNutritionController.updateDailyNutrition
 );

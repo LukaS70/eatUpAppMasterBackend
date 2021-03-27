@@ -20,7 +20,7 @@ router.post(
         check('instructions').not().isEmpty(),
         check('image').not().isEmpty(),
         check('ingredients').isArray({ min: 1 }),
-        check('ingredients.*.amount').isNumeric(),
+        check('ingredients.*.amount').isFloat({ min: 0 }),
         check('ingredients.*.ingredient').not().isEmpty(),
         check('reviewRequested').isBoolean(),
         check('category').not().isEmpty()
@@ -35,7 +35,7 @@ router.patch(
         check('instructions').not().isEmpty(),
         check('image').not().isEmpty(),
         check('ingredients').isArray({ min: 1 }),
-        check('ingredients.*.amount').isNumeric(),
+        check('ingredients.*.amount').isFloat({ min: 0 }),
         check('ingredients.*.ingredient').not().isEmpty(),
         check('reviewRequested').isBoolean(),
         check('category').not().isEmpty()

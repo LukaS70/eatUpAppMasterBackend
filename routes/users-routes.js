@@ -16,9 +16,9 @@ router.post(
         check('lastName').not().isEmpty(),
         check('gender').not().isEmpty(),
         check('dateOfBirth').not().isEmpty(),
-        check('height').isNumeric(),
-        check('weight').isNumeric(),
-        check('maxCalories').isNumeric()
+        check('height').isFloat({ min: 0 }),
+        check('weight').isFloat({ min: 0 }),
+        check('maxCalories').isFloat({ min: 0 })
     ],
     usersControllers.signup);
 
