@@ -10,24 +10,13 @@ router.use(checkAuth);
 
 router.get('/:slid', shoppingListController.getShoppingListById);
 
-router.post(
-    '/',
-    [
-        check('ingredients').isArray({ min: 1 }),
-        check('ingredients.*.amount').isFloat({ min: 0 }),
-        check('ingredients.*.checked').isBoolean(),
-        check('ingredients.*.ingredient').not().isEmpty(),
-    ],
-    shoppingListController.createShoppingList
-);
-
 router.patch(
     '/:slid',
     [
-        check('ingredients').isArray({ min: 1 }),
-        check('ingredients.*.amount').isFloat({ min: 0 }),
-        check('ingredients.*.checked').isBoolean(),
-        check('ingredients.*.ingredient').not().isEmpty(),
+        check('items').isArray(),
+        check('items.*.amount').isFloat({ min: 0 }),
+        check('items.*.checked').isBoolean(),
+        check('items.*.ingredient').not().isEmpty(),
     ],
     shoppingListController.updateShoppingList
 );
