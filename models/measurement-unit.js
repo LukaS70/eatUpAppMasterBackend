@@ -9,6 +9,6 @@ const measurementUnitSchema = new Schema({
     perName: { type: String, required: true },
 });
 
-userSchema.plugin(uniqueValidator);
+measurementUnitSchema.plugin(uniqueValidator);
 
 module.exports = mongoose.model('MeasurementUnit', measurementUnitSchema);

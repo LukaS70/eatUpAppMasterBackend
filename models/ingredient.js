@@ -17,6 +17,7 @@ const ingredientSchema = new Schema({
     reviewRequested: { type: Boolean, required: true },
     measurementUnit: { type: mongoose.Types.ObjectId, required: true, ref: 'MeasurementUnit' },
     category: { type: mongoose.Types.ObjectId, required: true, ref: 'IngredientCategory' },
+    recipes: [{type: mongoose.Types.ObjectId, required: true, ref: 'Recipe'}],
     creator: { type: mongoose.Types.ObjectId, required: true, ref: 'User' }
 });
 

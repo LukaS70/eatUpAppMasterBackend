@@ -8,6 +8,6 @@ const ingredientCategorySchema = new Schema({
     displayName: { type: String, required: true }
 });
 
-userSchema.plugin(uniqueValidator);
+ingredientCategorySchema.plugin(uniqueValidator);
 
 module.exports = mongoose.model('IngredientCategory', ingredientCategorySchema);

@@ -1,13 +1,33 @@
 const { validationResult } = require('express-validator');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const mongoose = require('mongoose');
 
 const HttpError = require('../models/http-error');
 const User = require('../models/user');
+const ShoppingList = require('../models/shopping-list');
 
 const getUserData = async (req, res, next) => {
-    console.log('getUserData');
-    res.json({ message: 'getUserData' })
+    const userId = req.params.uid;
+
+    let user;
+    try {
+        user = await User.findById(userId, '-password').populate('dailyNutrition').populate('shoppingList');
+    } catch (err) {
+        const error = new HttpError('Fetching user data failed, please try again later', 500);
+        return next(error);
+    }
+
+    if (userId !== req.userData.userId) {
+        return next(new HttpError('Unauthorized', 404));
+    }
+
+    if (!user) {
+        const error = new HttpError('User not found, please try again later', 500);
+        return next(error);
+    }
+
+    res.status(201).json({ user: user.toObject({ getters: true }) });
 };
 
 const signup = async (req, res, next) => {
@@ -52,8 +72,18 @@ const signup = async (req, res, next) => {
         dailyNutrition: []
     });
 
+    const createdShoppingList = new ShoppingList({
+        item: [],
+        creator: createdUser.id
+    });
+
     try {
-        await createdUser.save();
+        const sess = await mongoose.startSession();
+        sess.startTransaction();
+        await createdShoppingList.save({ session: sess });
+        createdUser.shoppingList = createdShoppingList.id;
+        await createdUser.save({ session: sess });
+        await sess.commitTransaction();
     } catch (err) {
         const error = new HttpError('Signing up failed, please try again.', 500);
         console.log('here');
@@ -75,7 +105,7 @@ const signup = async (req, res, next) => {
     res.status(201).json({
         userId: createdUser.id,
         email: createdUser.email,
-        token: token                //  token saljemo na front
+        token: token
     });
 }
 
@@ -97,7 +127,7 @@ const login = async (req, res, next) => {
 
     let isValidPassword = false;
     try {
-        isValidPassword = await bcrypt.compare(password, existingUser.password);        // compare metodom proveravamo plain text password sa hashovanim (existingUser.password)
+        isValidPassword = await bcrypt.compare(password, existingUser.password);
     } catch (err) {
         const error = new HttpError('Could not log you in, please check your credentials and try again.', 500);
         return next(error);
@@ -111,9 +141,9 @@ const login = async (req, res, next) => {
     let token;
     try {
         token = jwt.sign(
-            { userId: existingUser.id, email: existingUser.email },       // pravimo token i u njega encodujemo userid i email npr
-            'dont_ever_share_this_private_key_11231',                   // drugi argument je string koji je private key... NIKAD GA NE DELITI NIGDE, ON JE NA SERVERU SAMO 
-            { expiresIn: '1h' }                                         // da istekne posle 1h
+            { userId: existingUser.id, email: existingUser.email },
+            'dont_ever_share_this_private_key_11231',
+            { expiresIn: '1h' }
         );
     } catch (err) {
         const error = new HttpError('Logging in failed, please try again.', 500);

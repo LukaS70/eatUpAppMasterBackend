@@ -13,7 +13,7 @@ router.get('/:uid', dailyNutritionController.getDailyNutritionByUserId);
 router.post(
     '/',
     [
-        check('day').not().isEmpty(),
+        /* check('day').not().isEmpty(), */
         check('nutrition').isObject(),
         check('nutrition.calories').isFloat({ min: 0 }),
         check('nutrition.totalFats').isFloat({ min: 0 }),
@@ -22,22 +22,7 @@ router.post(
         check('nutrition.sugar').isFloat({ min: 0 }),
         check('nutrition.proteine').isFloat({ min: 0 })
     ],
-    dailyNutritionController.createDailyNutrition
-);
-
-router.patch(
-    '/:dnid',
-    [
-        check('day').not().isEmpty(),
-        check('nutrition').isObject(),
-        check('nutrition.calories').isFloat({ min: 0 }),
-        check('nutrition.totalFats').isFloat({ min: 0 }),
-        check('nutrition.saturatedFats').isFloat({ min: 0 }),
-        check('nutrition.totalCarbohydrates').isFloat({ min: 0 }),
-        check('nutrition.sugar').isFloat({ min: 0 }),
-        check('nutrition.proteine').isFloat({ min: 0 })
-    ],
-    dailyNutritionController.updateDailyNutrition
+    dailyNutritionController.addDailyNutrition
 );
 
 module.exports = router;

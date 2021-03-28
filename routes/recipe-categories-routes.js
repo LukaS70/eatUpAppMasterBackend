@@ -4,7 +4,8 @@ const recipeCategoriesController = require('../controllers/recipe-categories-con
 
 const router = express.Router();
 
-
+/* 
+router.post('/', recipeCategoriesController.createRecipeCategories); */
 router.get('/', recipeCategoriesController.getRecipeCategories);
 
 module.exports = router;
