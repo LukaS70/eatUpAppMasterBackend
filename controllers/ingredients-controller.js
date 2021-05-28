@@ -40,6 +40,15 @@ const getIngredientById = async (req, res, next) => {
     res.json({ ingredient: ingredient.toObject({ getters: true }) });
 }
 
+const uploadIngredientImage = async (req, res, next) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return next(new HttpError('Invalid inputs passed, please check your data.', 422));
+    }
+
+    res.status(201).json({ url: 'http://localhost:5000/' + req.file.path });
+}
+
 const createIngredient = async (req, res, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -165,6 +174,7 @@ const deleteIngredient = async (req, res, next) => {                            
     res.status(200).json({ message: 'Ingredient deleted.' });
 }
 
+exports.uploadIngredientImage = uploadIngredientImage;
 exports.getIngredients = getIngredients;
 exports.getIngredientById = getIngredientById;
 exports.createIngredient = createIngredient;

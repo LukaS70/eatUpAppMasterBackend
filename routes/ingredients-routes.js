@@ -3,6 +3,7 @@ const { check } = require('express-validator');
 
 const ingredientsController = require('../controllers/ingredients-controller');
 const checkAuth = require('../middleware/check-auth');
+const fileUpload = require('../middleware/file-upload');
 
 const router = express.Router();
 
@@ -12,6 +13,12 @@ router.get('/', ingredientsController.getIngredients);
 router.get('/:iid', ingredientsController.getIngredientById);
 
 router.use(checkAuth);
+
+router.post(
+    '/upload',
+    fileUpload.single('image'),
+    ingredientsController.uploadIngredientImage
+);
 
 router.post(
     '/',

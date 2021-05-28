@@ -1,3 +1,6 @@
+const fs = require('fs');   // za rad sa fajl sistemom
+const path = require('path')
+
 const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
@@ -16,6 +19,8 @@ const dailyNutritionRoutes = require('./routes/daily-nutrition-routes');
 const app = express();
 
 app.use(bodyParser.json());
+
+app.use('/uploads/images', express.static(path.join('uploads', 'images')));
 
 app.use((req, res, next) => {
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -38,6 +43,11 @@ app.use((req, res, next) => {
 });
 
 app.use((error, req, res, next) => {    // error handler middleware iz epress.js, ako se desi error negde, izvrsava se
+    if (req.file) {                        // .file je property na req koji stavlja multer ukliko postoji fajl u requestu, ovaj if je ovde, da kad god da se desi error, ako smo uploadovali fajl, da rollbackujemo to
+        fs.unlink(req.file.path, (err) => {     // brisemo fajl
+            console.log(err);
+        });
+    }
     if (res.headerSent) {
         return next(error);
     }

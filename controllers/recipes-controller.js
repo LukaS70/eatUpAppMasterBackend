@@ -41,6 +41,15 @@ const getRecipeById = async (req, res, next) => {
     res.json({ recipe: recipe.toObject({ getters: true }) });
 }
 
+const uploadRecipeImage = async (req, res, next) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return next(new HttpError('Invalid inputs passed, please check your data.', 422));
+    }
+
+    res.status(201).json({ url: 'http://localhost:5000/' + req.file.path });
+}
+
 const createRecipe = async (req, res, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -178,6 +187,7 @@ const deleteRecipe = async (req, res, next) => {
     res.status(200).json({ message: 'Recipe deleted.' });
 }
 
+exports.uploadRecipeImage = uploadRecipeImage;
 exports.getRecipes = getRecipes;
 exports.getRecipeById = getRecipeById;
 exports.createRecipe = createRecipe;

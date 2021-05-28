@@ -30,6 +30,49 @@ const getUserData = async (req, res, next) => {
     res.status(201).json({ user: user.toObject({ getters: true }) });
 };
 
+const updateUserData = async (req, res, next) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return next(new HttpError('Invalid inputs passed, please check your data.', 422));
+    }
+    const { firstName, lastName, gender, dateOfBirth, height, weight, maxCalories } = req.body;
+    const userId = req.params.uid;
+
+    let user;
+    try {
+        user = await User.findById(userId, '-password').populate('dailyNutrition').populate('shoppingList');
+    } catch (err) {
+        const error = new HttpError('Fetching user data failed, please try again later', 500);
+        return next(error);
+    }
+
+    if (userId !== req.userData.userId) {
+        return next(new HttpError('Unauthorized', 404));
+    }
+
+    if (!user) {
+        const error = new HttpError('User not found, please try again later', 500);
+        return next(error);
+    }
+
+    user.firstName = firstName;
+    user.lastName = lastName;
+    user.gender = gender;
+    user.dateOfBirth = dateOfBirth;
+    user.height = height;
+    user.weight = weight;
+    user.maxCalories = maxCalories;
+
+    try {
+        await user.save();
+    } catch (err) {
+        const error = new HttpError('Could not update user data.', 500);
+        return next(error);
+    }
+
+    res.status(201).json({ user: user.toObject({ getters: true }) });
+};
+
 const signup = async (req, res, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -158,5 +201,6 @@ const login = async (req, res, next) => {
 }
 
 exports.getUserData = getUserData;
+exports.updateUserData = updateUserData;
 exports.signup = signup;
 exports.login = login;

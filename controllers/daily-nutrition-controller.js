@@ -16,11 +16,11 @@ const getDailyNutritionByUserId = async (req, res, next) => {
     }
 
     if (userId !== req.userData.userId) {
-        return next(new HttpError('Unauthorized', 404));
+        return next(new HttpError('Unauthorized', 401));
     }
 
     if (!user || user.dailyNutrition.length === 0) {
-        const error = new HttpError('Could not find daily nutrition data for provided user id.', 500);
+        const error = new HttpError('Could not find daily nutrition data for provided user id.', 404);
         return next(error);
     }
 

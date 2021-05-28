@@ -28,4 +28,17 @@ router.use(checkAuth);
 
 router.get('/:uid', usersControllers.getUserData);
 
+router.patch(
+    '/:uid',
+    [
+        check('firstName').not().isEmpty(),
+        check('lastName').not().isEmpty(),
+        check('gender').not().isEmpty(),
+        check('dateOfBirth').not().isEmpty(),
+        check('height').isFloat({ min: 0 }),
+        check('weight').isFloat({ min: 0 }),
+        check('maxCalories').isFloat({ min: 0 })
+    ],
+    usersControllers.updateUserData);
+
 module.exports = router;
