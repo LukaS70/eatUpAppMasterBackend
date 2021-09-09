@@ -5,11 +5,26 @@ const HttpError = require('../models/http-error');
 const DailyNutrition = require('../models/daily-nutrition');
 const User = require('../models/user');
 
+const getDailyNutrition = async (req, res, next) => {
+    if (!req.userData.admin) {
+        return next(new HttpError('Unauthorized', 401));
+    }
+
+    let dailyNutrition;
+    try {
+        dailyNutrition = await DailyNutrition.find();
+    } catch (err) {
+        const error = new HttpError('Fetching daily nutrition data failed, please try again later', 500);
+        return next(error);
+    }
+    res.status(201).json({ dailyNutrition: dailyNutrition.map(dn => dn.toObject({ getters: true })) });
+}
+
 const getDailyNutritionByUserId = async (req, res, next) => {
     const userId = req.params.uid;
     let user;
     try {
-        user = await User.findById(userId).populate('dailyNutrition');
+        user = await User.findById(userId, '-password').populate('dailyNutrition');
     } catch (err) {
         const error = new HttpError('Fetching daily nutrition failed, please try again later', 500);
         return next(error);
@@ -37,7 +52,7 @@ const addDailyNutrition = async (req, res, next) => {
 
     let user;
     try {
-        user = await User.findById(req.userData.userId).populate('dailyNutrition');
+        user = await User.findById(req.userData.userId, '-password').populate('dailyNutrition');
     } catch (err) {
         const error = new HttpError('Adding to daily nutrition failed, please try again later', 500);
         return next(error);
@@ -93,5 +108,6 @@ const addDailyNutrition = async (req, res, next) => {
     res.status(201).json({ message: 'Daily nutrition added.' });
 }
 
+exports.getDailyNutrition = getDailyNutrition;
 exports.getDailyNutritionByUserId = getDailyNutritionByUserId;
 exports.addDailyNutrition = addDailyNutrition;

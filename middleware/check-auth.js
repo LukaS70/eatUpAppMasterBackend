@@ -12,7 +12,10 @@ module.exports = (req, res, next) => {
             throw new Error('Authentication failed!')
         }
         const decodedToken = jwt.verify(token, 'dont_ever_share_this_private_key_11231');
-        req.userData = { userId: decodedToken.userId }
+        req.userData = {
+            userId: decodedToken.userId,
+            admin: decodedToken.admin
+        }
         next();
     } catch (err) {
         const error = new HttpError('Authentication failed!', 403);

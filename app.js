@@ -55,7 +55,7 @@ app.use((error, req, res, next) => {    // error handler middleware iz epress.js
     res.json({ message: error.message || 'An unknown error ocured!' });
 });
 
-mongoose.connect('mongodb+srv://eatUpApp:3E2MeB7bUUFro2QL@cluster0.8edhh.mongodb.net/eatUpApp?retryWrites=true&w=majority',)
+mongoose.connect('mongodb+srv://eatUpApp:3E2MeB7bUUFro2QL@cluster0.8edhh.mongodb.net/eatUpApp?retryWrites=true&w=majority',{useNewUrlParser: true})
     .then(() => {
         app.listen(5000);
     })

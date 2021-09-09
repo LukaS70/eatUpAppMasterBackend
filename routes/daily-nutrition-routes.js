@@ -8,6 +8,8 @@ const router = express.Router();
 
 router.use(checkAuth);
 
+router.get('/', dailyNutritionController.getDailyNutrition);
+
 router.get('/:uid', dailyNutritionController.getDailyNutritionByUserId);
 
 router.post(

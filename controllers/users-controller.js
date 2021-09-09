@@ -73,6 +73,27 @@ const updateUserData = async (req, res, next) => {
     res.status(201).json({ user: user.toObject({ getters: true }) });
 };
 
+const getUsers = async (req, res, next) => {
+    if (!req.userData.admin) {
+        return next(new HttpError('Unauthorized', 404));
+    }
+    
+    let users;
+    try {
+        users = await User.find().select(['-password']).populate('dailyNutrition').populate('shoppingList');
+    } catch (err) {
+        const error = new HttpError('Fetching user data failed, please try again later', 500);
+        return next(error);
+    }
+
+    if (!users) {
+        const error = new HttpError('Users not found, please try again later', 500);
+        return next(error);
+    }
+
+    res.status(201).json({ users: users.map(user => user.toObject({ getters: true })) });
+};
+
 const signup = async (req, res, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -112,7 +133,8 @@ const signup = async (req, res, next) => {
         weight: weight,
         maxCalories: maxCalories,
         shoppingList: null,     // izmeni da pre nego sto se napravi user, da se napravi novi shopping list
-        dailyNutrition: []
+        dailyNutrition: [],
+        admin: false
     });
 
     const createdShoppingList = new ShoppingList({
@@ -136,7 +158,7 @@ const signup = async (req, res, next) => {
     let token;
     try {
         token = jwt.sign(
-            { userId: createdUser.id, email: createdUser.email },
+            { userId: createdUser.id, email: createdUser.email, admin: createdUser.admin },
             'dont_ever_share_this_private_key_11231',
             { expiresIn: '1h' }
         );
@@ -184,7 +206,7 @@ const login = async (req, res, next) => {
     let token;
     try {
         token = jwt.sign(
-            { userId: existingUser.id, email: existingUser.email },
+            { userId: existingUser.id, email: existingUser.email, admin: existingUser.admin },
             'dont_ever_share_this_private_key_11231',
             { expiresIn: '1h' }
         );
@@ -200,7 +222,62 @@ const login = async (req, res, next) => {
     });
 }
 
+const adminLogin = async (req, res, next) => {
+    const { email, password } = req.body;
+
+    let existingUser;
+    try {
+        existingUser = await User.findOne({ email: email });
+    } catch (err) {
+        const error = new HttpError('Logging in faild, please try again later', 500);
+        return next(error);
+    }
+
+    if (!existingUser) {
+        const error = new HttpError('Invalid credentials, could not log you in.', 403);
+        return next(error);
+    }
+
+    if (!existingUser.admin) {
+        const error = new HttpError('Unauthorized', 404);
+        return next(error);
+    }
+
+    let isValidPassword = false;
+    try {
+        isValidPassword = await bcrypt.compare(password, existingUser.password);
+    } catch (err) {
+        const error = new HttpError('Could not log you in, please check your credentials and try again.', 500);
+        return next(error);
+    }
+
+    if (!isValidPassword) {
+        const error = new HttpError('Invalid credentials, could not log you in.', 403);
+        return next(error);
+    }
+
+    let token;
+    try {
+        token = jwt.sign(
+            { userId: existingUser.id, email: existingUser.email, admin: existingUser.admin },
+            'dont_ever_share_this_private_key_11231',
+            { expiresIn: '1h' }
+        );
+    } catch (err) {
+        const error = new HttpError('Logging in failed, please try again.', 500);
+        return next(error);
+    }
+
+    res.json({
+        userId: existingUser.id,
+        email: existingUser.email,
+        token: token
+    });
+}
+
+exports.getUsers = getUsers;
 exports.getUserData = getUserData;
 exports.updateUserData = updateUserData;
 exports.signup = signup;
 exports.login = login;
+exports.adminLogin = adminLogin;

@@ -8,6 +8,8 @@ const router = express.Router();
 
 router.use(checkAuth);
 
+router.get('/', shoppingListController.getShoppingLists);
+
 router.get('/:slid', shoppingListController.getShoppingListById);
 
 router.patch(

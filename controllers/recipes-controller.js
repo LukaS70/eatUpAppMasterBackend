@@ -7,9 +7,9 @@ const Ingredient = require('../models/ingredient');
 
 const getRecipes = async (req, res, next) => {
     let recipes;
-    // later filter non public ings
+    
     try {
-        recipes = await Recipe.find().populate('category');
+        recipes = await Recipe.find({'public': true}).populate('category');
     } catch (err) {
         const error = new HttpError('Fetching recipes failed, please try again later', 500);
         return next(error);
@@ -33,10 +33,10 @@ const getRecipeById = async (req, res, next) => {
         return next(error);
     }
 
-    /* if (!recipe.public && recipe.creator.toString() !== req.userData.userId) {       // adding for public 
+    if (!recipe.public) {
         const error = new HttpError('Unauthorized', 401);
         return next(error);
-    } */
+    }
 
     res.json({ recipe: recipe.toObject({ getters: true }) });
 }
@@ -65,7 +65,7 @@ const createRecipe = async (req, res, next) => {
         ingredients: ingredients,
         nutrition: nutrition,
         reviewRequested: reviewRequested,
-        public: true,                           // promeniti na false kad se doda admin
+        public: false,                           
         category: category,
         creator: req.userData.userId
     });
@@ -134,6 +134,7 @@ const updateRecipe = async (req, res, next) => {
         recipe.nutrition = nutrition;
         recipe.reviewRequested = reviewRequested;
         recipe.category = category;
+        recipe.public = false;
         await recipe.save({ session: sess });
         for (let index = 0; index < recipe.ingredients.length; index++) {
             let ing = await Ingredient.findById(ingredients[index].ingredient);
@@ -187,9 +188,79 @@ const deleteRecipe = async (req, res, next) => {
     res.status(200).json({ message: 'Recipe deleted.' });
 }
 
+const makeRecipePublic = async (req, res, next) => {
+    const recipeId = req.params.rid;
+
+    let recipe;
+    try {
+        recipe = await Recipe.findById(recipeId);
+    } catch (err) {
+        const error = new HttpError('Something went wrong, could not make recipe public.', 500);
+        return next(error);
+    }
+
+    if (!recipe) {
+        const error = new HttpError('Could not find a recipe for provided id', 404);
+        return next(error);
+    }
+
+    if (!req.userData.admin) {
+        const error = new HttpError('You are not allowed to make this recipe public.', 401);
+        return next(error);
+    }
+
+    recipe.public = true;
+    recipe.reviewRequested = false;
+
+    try {
+        await recipe.save();
+    } catch (err) {
+        const error = new HttpError('Could not make recipe public.', 500);
+        return next(error);
+    }
+
+    res.status(200).json({ recipe: recipe.toObject({ getters: true }) });
+} 
+
+const unmakeRecipePublic = async (req, res, next) => {
+    const recipeId = req.params.rid;
+
+    let recipe;
+    try {
+        recipe = await Recipe.findById(recipeId);
+    } catch (err) {
+        const error = new HttpError('Something went wrong, could not unmake recipe public.', 500);
+        return next(error);
+    }
+
+    if (!recipe) {
+        const error = new HttpError('Could not find a recipe for provided id', 404);
+        return next(error);
+    }
+
+    if (!req.userData.admin) {
+        const error = new HttpError('You are not allowed to unmake this recipe public.', 401);
+        return next(error);
+    }
+
+    recipe.public = false;
+    recipe.reviewRequested = false;
+
+    try {
+        await recipe.save();
+    } catch (err) {
+        const error = new HttpError('Could not unmake recipe public.', 500);
+        return next(error);
+    }
+
+    res.status(200).json({ recipe: recipe.toObject({ getters: true }) });
+} 
+
 exports.uploadRecipeImage = uploadRecipeImage;
 exports.getRecipes = getRecipes;
 exports.getRecipeById = getRecipeById;
 exports.createRecipe = createRecipe;
 exports.updateRecipe = updateRecipe;
 exports.deleteRecipe = deleteRecipe;
+exports.makeRecipePublic = makeRecipePublic;
+exports.unmakeRecipePublic = unmakeRecipePublic;

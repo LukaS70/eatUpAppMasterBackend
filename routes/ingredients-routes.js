@@ -58,6 +58,9 @@ router.patch(
     ingredientsController.updateIngredient
 );
 
+router.patch('/make-public/:iid', ingredientsController.makeIngredientPublic);
+router.patch('/unmake-public/:iid', ingredientsController.unmakeIngredientPublic);
+
 router.delete('/:iid', ingredientsController.deleteIngredient);
 
 module.exports = router;

@@ -50,6 +50,9 @@ router.patch(
     recipesController.updateRecipe
 );
 
+router.patch('/make-public/:rid', recipesController.makeRecipePublic);
+router.patch('/unmake-public/:rid', recipesController.unmakeRecipePublic);
+
 router.delete('/:rid', recipesController.deleteRecipe);
 
 module.exports = router;

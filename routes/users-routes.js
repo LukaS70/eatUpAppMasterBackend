@@ -24,7 +24,11 @@ router.post(
 
 router.post('/login', usersControllers.login);
 
+router.post('/adminLogin', usersControllers.adminLogin);
+
 router.use(checkAuth);
+
+router.get('/', usersControllers.getUsers);
 
 router.get('/:uid', usersControllers.getUserData);
 

@@ -14,7 +14,8 @@ const userSchema = new Schema({
     weight: { type: Number, required: true, min: 0 },
     maxCalories: { type: Number, required: true, min: 0 },
     shoppingList: { type: mongoose.Types.ObjectId, required: false, ref: 'ShoppingList' },
-    dailyNutrition: [{ type: mongoose.Types.ObjectId, required: true, ref: 'DailyNutrition' }]
+    dailyNutrition: [{ type: mongoose.Types.ObjectId, required: true, ref: 'DailyNutrition' }],
+    admin: { type:Boolean, required: false }
 });
 
 userSchema.plugin(uniqueValidator);

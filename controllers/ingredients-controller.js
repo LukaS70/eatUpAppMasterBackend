@@ -6,9 +6,9 @@ const Ingredient = require('../models/ingredient');
 
 const getIngredients = async (req, res, next) => {
     let ingredients;
-    // later filter non public ings
+   
     try {
-        ingredients = await Ingredient.find().populate('category').populate('measurementUnit');
+        ingredients = await Ingredient.find({'public': true}).populate('category').populate('measurementUnit');
     } catch (err) {
         const error = new HttpError('Fetching ingredients failed, please try again later', 500);
         return next(error);
@@ -32,10 +32,10 @@ const getIngredientById = async (req, res, next) => {
         return next(error);
     }
 
-    /* if (!ingredient.public && ingredient.creator.toString() !== req.userData.userId) {       // adding for public 
+    if (!ingredient.public) {
         const error = new HttpError('Unauthorized', 401);
         return next(error);
-    } */
+    }
 
     res.json({ ingredient: ingredient.toObject({ getters: true }) });
 }
@@ -62,7 +62,7 @@ const createIngredient = async (req, res, next) => {
         image: image,
         nutrition: nutrition,
         reviewRequested: reviewRequested,
-        public: true,                           // promeniti na false kad se doda admin
+        public: false,                           
         measurementUnit: measurementUnit,
         category: category,
         recipes: [],
@@ -114,7 +114,8 @@ const updateIngredient = async (req, res, next) => {        // zabrani update nu
     ingredient.reviewRequested = reviewRequested;
     ingredient.measurementUnit = measurementUnit;
     ingredient.category = category;
-
+    ingredient.public = false;
+    
     try {
         await ingredient.save();
     } catch (err) {
@@ -174,9 +175,79 @@ const deleteIngredient = async (req, res, next) => {                            
     res.status(200).json({ message: 'Ingredient deleted.' });
 }
 
+const makeIngredientPublic = async (req, res, next) => {
+    const ingredientId = req.params.iid;
+
+    let ingredient;
+    try {
+        ingredient = await Ingredient.findById(ingredientId);
+    } catch (err) {
+        const error = new HttpError('Something went wrong, could not make ingredient public.', 500);
+        return next(error);
+    }
+
+    if (!ingredient) {
+        const error = new HttpError('Could not find a ingredient for provided id', 404);
+        return next(error);
+    }
+
+    if (!req.userData.admin) {
+        const error = new HttpError('You are not allowed to make this ingredient public.', 401);
+        return next(error);
+    }
+
+    ingredient.public = true;
+    ingredient.reviewRequested = false;
+
+    try {
+        await ingredient.save();
+    } catch (err) {
+        const error = new HttpError('Could not make ingredient public.', 500);
+        return next(error);
+    }
+
+    res.status(200).json({ ingredient: ingredient.toObject({ getters: true }) });
+} 
+
+const unmakeIngredientPublic = async (req, res, next) => {
+    const ingredientId = req.params.iid;
+
+    let ingredient;
+    try {
+        ingredient = await Ingredient.findById(ingredientId);
+    } catch (err) {
+        const error = new HttpError('Something went wrong, could not unmake ingredient public.', 500);
+        return next(error);
+    }
+
+    if (!ingredient) {
+        const error = new HttpError('Could not find a ingredient for provided id', 404);
+        return next(error);
+    }
+
+    if (!req.userData.admin) {
+        const error = new HttpError('You are not allowed to unmake this ingredient public.', 401);
+        return next(error);
+    }
+
+    ingredient.public = false;
+    ingredient.reviewRequested = false;
+
+    try {
+        await ingredient.save();
+    } catch (err) {
+        const error = new HttpError('Could not unmake ingredient public.', 500);
+        return next(error);
+    }
+
+    res.status(200).json({ ingredient: ingredient.toObject({ getters: true }) });
+}
+
 exports.uploadIngredientImage = uploadIngredientImage;
 exports.getIngredients = getIngredients;
 exports.getIngredientById = getIngredientById;
 exports.createIngredient = createIngredient;
 exports.updateIngredient = updateIngredient;
 exports.deleteIngredient = deleteIngredient;
+exports.makeIngredientPublic = makeIngredientPublic;
+exports.unmakeIngredientPublic = unmakeIngredientPublic;

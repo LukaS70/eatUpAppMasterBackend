@@ -3,6 +3,28 @@ const { validationResult } = require('express-validator');
 const HttpError = require('../models/http-error');
 const ShoppingList = require('../models/shopping-list');
 
+const getShoppingLists = async (req, res, next) => {
+    if (!req.userData.admin) {
+        const error = new HttpError('Unauthorized', 401);
+        return next(error);
+    }
+    
+    let shoppingLists;
+    try {
+        shoppingLists = await ShoppingList.find().populate('items.ingredient');
+    } catch (err) {
+        const error = new HttpError('Something went wrong, could not fetch shopping list.', 500);
+        return next(error);
+    }
+
+    if (!shoppingLists) {
+        const error = new HttpError('Could not find shopping lists.', 404);
+        return next(error);
+    }
+
+    res.status(201).json({ shoppingLists: shoppingLists.map(sl => sl.toObject({ getters: true })) });
+}
+
 const getShoppingListById = async (req, res, next) => {
     const shoppingListId = req.params.slid;
 
@@ -66,6 +88,6 @@ const updateShoppingList = async (req, res, next) => {
     res.status(200).json({ shoppingList: shoppingList.toObject({ getters: true }) });
 }
 
-
+exports.getShoppingLists = getShoppingLists;
 exports.getShoppingListById = getShoppingListById;
 exports.updateShoppingList = updateShoppingList;
