@@ -41,6 +41,47 @@ const getRecipeById = async (req, res, next) => {
     res.json({ recipe: recipe.toObject({ getters: true }) });
 }
 
+const getMyRecipes = async (req, res, next) => {
+    let recipes;
+    
+    try {
+        recipes = await Recipe.find({'creator': req.userData.userId}).populate('category');
+    } catch (err) {
+        const error = new HttpError('Fetching recipes failed, please try again later', 500);
+        return next(error);
+    }
+
+    if (!recipes || recipes.length == 0) {
+        const error = new HttpError('Could not find any recipes made by you.', 404);
+        return next(error);
+    }
+
+    res.status(201).json({ recipes: recipes.map(rec => rec.toObject({ getters: true })) });
+}
+
+const getAdminRecipes = async (req, res, next) => {
+    let recipes;
+
+    if (!req.userData.admin) {
+        const error = new HttpError('Unauthorized.', 401);
+        return next(error);
+    }
+
+    try {
+        recipes = await Recipe.find({ $or:[ {'public': true}, {'creator': req.userData.userId}, {'reviewRequested': true} ]}).populate('category').populate('ingredients.ingredient');
+    } catch (err) {
+        const error = new HttpError('Fetching recipes failed, please try again later', 500);
+        return next(error);
+    }
+
+    if (!recipes || recipes.length == 0) {
+        const error = new HttpError('Could not find any recipes.', 404);
+        return next(error);
+    }
+
+    res.status(201).json({ recipes: recipes.map(rec => rec.toObject({ getters: true })) });
+}
+
 const uploadRecipeImage = async (req, res, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -259,6 +300,8 @@ const unmakeRecipePublic = async (req, res, next) => {
 exports.uploadRecipeImage = uploadRecipeImage;
 exports.getRecipes = getRecipes;
 exports.getRecipeById = getRecipeById;
+exports.getMyRecipes = getMyRecipes;
+exports.getAdminRecipes = getAdminRecipes;
 exports.createRecipe = createRecipe;
 exports.updateRecipe = updateRecipe;
 exports.deleteRecipe = deleteRecipe;

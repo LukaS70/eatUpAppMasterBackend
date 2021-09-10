@@ -10,9 +10,13 @@ const router = express.Router();
 
 router.get('/', ingredientsController.getIngredients);
 
-router.get('/:iid', ingredientsController.getIngredientById);
+router.get('/single/:iid', ingredientsController.getIngredientById);
 
 router.use(checkAuth);
+
+router.get('/my-ingredients', ingredientsController.getMyIngredients);
+
+router.get('/admin', ingredientsController.getAdminIngredients);
 
 router.post(
     '/upload',

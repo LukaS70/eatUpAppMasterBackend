@@ -10,9 +10,13 @@ const router = express.Router();
 
 router.get('/', recipesController.getRecipes);
 
-router.get('/:rid', recipesController.getRecipeById);
+router.get('/single/:rid', recipesController.getRecipeById);
 
 router.use(checkAuth);
+
+router.get('/my-recipes', recipesController.getMyRecipes);
+
+router.get('/admin', recipesController.getAdminRecipes);
 
 router.post(
     '/upload',

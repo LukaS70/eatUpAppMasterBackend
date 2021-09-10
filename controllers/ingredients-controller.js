@@ -40,6 +40,47 @@ const getIngredientById = async (req, res, next) => {
     res.json({ ingredient: ingredient.toObject({ getters: true }) });
 }
 
+const getMyIngredients = async (req, res, next) => {
+    let ingredients;
+    
+    try {
+        ingredients = await Ingredient.find({'creator': req.userData.userId}).populate('category');
+    } catch (err) {
+        const error = new HttpError('Fetching ingredients failed, please try again later', 500);
+        return next(error);
+    }
+
+    if (!ingredients || ingredients.length == 0) {
+        const error = new HttpError('Could not find any ingredients made by you.', 404);
+        return next(error);
+    }
+
+    res.status(201).json({ ingredients: ingredients.map(rec => rec.toObject({ getters: true })) });
+}
+
+const getAdminIngredients = async (req, res, next) => {
+    let ingredients;
+
+    if (!req.userData.admin) {
+        const error = new HttpError('Unauthorized.', 401);
+        return next(error);
+    }
+
+    try {
+        ingredients = await Ingredient.find({ $or:[ {'public': true}, {'creator': req.userData.userId}, {'reviewRequested': true} ]}).populate('category').populate('ingredients.ingredient');
+    } catch (err) {
+        const error = new HttpError('Fetching ingredients failed, please try again later', 500);
+        return next(error);
+    }
+
+    if (!ingredients || ingredients.length == 0) {
+        const error = new HttpError('Could not find any ingredients.', 404);
+        return next(error);
+    }
+
+    res.status(201).json({ ingredients: ingredients.map(rec => rec.toObject({ getters: true })) });
+}
+
 const uploadIngredientImage = async (req, res, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -246,6 +287,8 @@ const unmakeIngredientPublic = async (req, res, next) => {
 exports.uploadIngredientImage = uploadIngredientImage;
 exports.getIngredients = getIngredients;
 exports.getIngredientById = getIngredientById;
+exports.getMyIngredients = getMyIngredients;
+exports.getAdminIngredients = getAdminIngredients;
 exports.createIngredient = createIngredient;
 exports.updateIngredient = updateIngredient;
 exports.deleteIngredient = deleteIngredient;
